@@ -1,1 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background:#2b1055; color:white;">
 
+<h1>📊 Dashboard</h1>
+
+<canvas id="chart"></canvas>
+
+<script>
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ names|safe }},
+        datasets: [{
+            label: 'Stock',
+            data: {{ qtys|safe }}
+        }]
+    }
+});
+</script>
+
+</body>
+</html>
