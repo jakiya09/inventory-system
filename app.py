@@ -4,7 +4,7 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = "lifebasket"
 
-# DB INIT
+# ---------------- DB INIT ----------------
 def init_db():
     conn = sqlite3.connect("products.db")
     cursor = conn.cursor()
@@ -21,25 +21,10 @@ def init_db():
     conn.commit()
     conn.close()
 
-# LOGIN
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        u = request.form["username"]
-        p = request.form["password"]
-
-        if u == "admin" and p == "1234":
-            session["user"] = u
-            return redirect("/")
-        return "Wrong Login"
-
-    return render_template("login.html")
-
-# HOME
+# ---------------- HOME ----------------
 @app.route("/")
 def index():
-    if "user" not in session:
-        return redirect("/login")
+    init_db()  # 🔥 IMPORTANT FIX
 
     conn = sqlite3.connect("products.db")
     cursor = conn.cursor()
@@ -49,7 +34,7 @@ def index():
 
     return render_template("index.html", products=products)
 
-# ADD PRODUCT
+# ---------------- ADD PRODUCT ----------------
 @app.route("/add", methods=["POST"])
 def add():
     name = request.form["name"]
@@ -65,9 +50,11 @@ def add():
 
     return redirect("/")
 
-# DASHBOARD
+# ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
 def dashboard():
+    init_db()
+
     conn = sqlite3.connect("products.db")
     cursor = conn.cursor()
     cursor.execute("SELECT name, qty FROM products")
@@ -79,12 +66,24 @@ def dashboard():
 
     return render_template("dashboard.html", names=names, qtys=qtys)
 
-# LOGOUT
+# ---------------- LOGIN SIMPLE ----------------
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        if request.form["username"] == "admin" and request.form["password"] == "1234":
+            session["user"] = "admin"
+            return redirect("/")
+        return "Wrong login"
+
+    return render_template("login.html")
+
+# ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
-    session.pop("user", None)
+    session.clear()
     return redirect("/login")
 
+# ---------------- RUN ----------------
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
