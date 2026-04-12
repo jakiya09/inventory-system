@@ -1,1 +1,27 @@
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #5f2c82, #49a09d);
+    color: white;
+    padding: 20px;
+}
 
+.card {
+    background: white;
+    color: black;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 10px;
+}
+
+button {
+    background: purple;
+    color: white;
+    padding: 8px;
+    border: none;
+}
+
+table {
+    width: 100%;
+    background: white;
+    color: black;
+}
