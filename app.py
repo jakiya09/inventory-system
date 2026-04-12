@@ -1,16 +1,10 @@
 from flask import Flask, render_template, request, redirect, session, Response
 import sqlite3, os, csv, io
-from werkzeug.utils import secure_filename
-from PIL import Image
-import pytesseract
 
 app = Flask(__name__)
-app.secret_key = "lifebasket_pro"
-DB = "database.db"
+app.secret_key = "lifebasket_final"
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+DB = "database.db"
 
 # ================= DB INIT =================
 def init_db():
@@ -35,16 +29,22 @@ init_db()
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
-        if request.form["username"] == "admin" and request.form["password"] == "admin":
+        u = request.form.get("username")
+        p = request.form.get("password")
+
+        if u == "admin" and p == "admin":
             session["user"] = "admin"
             return redirect("/")
-        return "Invalid login"
+        return redirect("/login")
+
     return render_template("login.html")
+
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
+
 
 # ================= DASHBOARD =================
 @app.route("/")
@@ -60,16 +60,26 @@ def index():
 
     return render_template("index.html", products=data)
 
-# ================= ADD PRODUCT =================
+
+# ================= ADD =================
 @app.route("/add", methods=["POST"])
 def add():
+    if "user" not in session:
+        return redirect("/login")
+
+    name = request.form["name"]
+    qty = request.form["qty"]
+    price = request.form["price"]
+
     conn = sqlite3.connect(DB)
     cur = conn.cursor()
-    cur.execute("INSERT INTO products (name, qty, price) VALUES (?,?,?)",
-                (request.form["name"], request.form["qty"], request.form["price"]))
+    cur.execute("INSERT INTO products (name,qty,price) VALUES (?,?,?)",
+                (name, qty, price))
     conn.commit()
     conn.close()
+
     return redirect("/")
+
 
 # ================= DELETE =================
 @app.route("/delete/<int:id>")
@@ -80,6 +90,7 @@ def delete(id):
     conn.commit()
     conn.close()
     return redirect("/")
+
 
 # ================= CSV EXPORT =================
 @app.route("/export")
@@ -98,36 +109,6 @@ def export():
         mimetype="text/csv",
         headers={"Content-Disposition":"attachment;filename=inventory.csv"})
 
-# ================= CSV/EXCEL IMPORT =================
-@app.route("/upload", methods=["POST"])
-def upload():
-    file = request.files["file"]
-    stream = io.StringIO(file.stream.read().decode("utf-8"))
-    reader = csv.reader(stream)
-
-    next(reader)
-
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-
-    for row in reader:
-        cur.execute("INSERT INTO products (name,qty,price) VALUES (?,?,?)",
-                    (row[0],row[1],row[2]))
-
-    conn.commit()
-    conn.close()
-    return redirect("/")
-
-# ================= AI OCR IMAGE =================
-@app.route("/ocr", methods=["POST"])
-def ocr():
-    file = request.files["image"]
-    path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(file.filename))
-    file.save(path)
-
-    text = pytesseract.image_to_string(Image.open(path))
-
-    return f"<pre>{text}</pre>"
 
 # ================= RUN =================
 if __name__ == "__main__":
