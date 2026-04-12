@@ -2,24 +2,27 @@
 <html>
 <head>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="/static/style.css">
 </head>
-<body style="background:#0b1f3a;color:white;text-align:center;">
+<body>
 
-<h1>📊 Dashboard</h1>
+<h2>Dashboard</h2>
 
 <canvas id="chart"></canvas>
 
 <script>
-const ctx = document.getElementById('chart');
+const data = {{ data | tojson }};
+const labels = Object.keys(data);
+const values = Object.values(data);
 
-new Chart(ctx, {
+new Chart(document.getElementById("chart"), {
     type: 'bar',
     data: {
-        labels: {{ names|safe }},
+        labels: labels,
         datasets: [{
-            label: 'Stock',
-            data: {{ qtys|safe }},
-            backgroundColor: 'blue'
+            label: "Stock Qty",
+            data: values,
+            backgroundColor: "blue"
         }]
     }
 });
