@@ -1,109 +1,86 @@
-import sqlite3, csv, io
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect
+import sqlite3
+import os
 
 app = Flask(__name__)
 
-def db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# DB init
 def init_db():
-    conn = db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            qty INTEGER,
-            price REAL
-        )
+    conn = sqlite3.connect("products.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        qty INTEGER,
+        price REAL
+    )
     """)
     conn.commit()
     conn.close()
 
-init_db()
-
 @app.route("/")
-def home():
-    conn = db()
-    products = conn.execute("SELECT * FROM products").fetchall()
-    total = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+def index():
+    conn = sqlite3.connect("products.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products")
+    products = cursor.fetchall()
     conn.close()
+
+    total = sum([p[2] for p in products])
+
     return render_template("index.html", products=products, total=total)
 
 @app.route("/add", methods=["POST"])
 def add():
     name = request.form["name"]
-    qty = request.form["qty"]
-    price = request.form["price"]
+    qty = int(request.form["qty"])
+    price = float(request.form["price"])
 
-    conn = db()
-    conn.execute("INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
-                 (name, qty, price))
+    conn = sqlite3.connect("products.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO products (name, qty, price) VALUES (?, ?, ?)", (name, qty, price))
     conn.commit()
     conn.close()
+
     return redirect("/")
 
-@app.route("/delete/<int:id>")
-def delete(id):
-    conn = db()
-    conn.execute("DELETE FROM products WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-    return redirect("/")
-
-@app.route("/edit/<int:id>", methods=["POST"])
-def edit(id):
+@app.route("/add-daily", methods=["POST"])
+def add_daily():
     name = request.form["name"]
-    qty = request.form["qty"]
-    price = request.form["price"]
+    qty = int(request.form["qty"])
 
-    conn = db()
-    conn.execute("UPDATE products SET name=?, qty=?, price=? WHERE id=?",
-                 (name, qty, price, id))
-    conn.commit()
-    conn.close()
-    return redirect("/")
-
-# ✅ CSV Export
-@app.route("/export")
-def export():
-    conn = db()
-    products = conn.execute("SELECT * FROM products").fetchall()
-    conn.close()
-
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["Name", "Qty", "Price"])
-
-    for p in products:
-        writer.writerow([p["name"], p["qty"], p["price"]])
-
-    output.seek(0)
-    return send_file(io.BytesIO(output.getvalue().encode()),
-                     mimetype="text/csv",
-                     download_name="inventory.csv",
-                     as_attachment=True)
-
-# ✅ Excel Upload (CSV file)
-@app.route("/upload", methods=["POST"])
-def upload():
-    file = request.files["file"]
-
-    stream = io.StringIO(file.stream.read().decode("UTF8"))
-    csv_reader = csv.reader(stream)
-
-    conn = db()
-
-    for row in csv_reader:
-        if len(row) == 3:
-            conn.execute("INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
-                         (row[0], row[1], row[2]))
-
+    conn = sqlite3.connect("products.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE products SET qty = qty - ? WHERE name = ?", (qty, name))
     conn.commit()
     conn.close()
 
     return redirect("/")
+
+@app.route("/upload-image", methods=["POST"])
+def upload_image():
+    file = request.files["image"]
+    if file:
+        file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+    return redirect("/")
+
+@app.route("/dashboard")
+def dashboard():
+    conn = sqlite3.connect("products.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, qty FROM products")
+    data = cursor.fetchall()
+    conn.close()
+
+    names = [d[0] for d in data]
+    qtys = [d[1] for d in data]
+
+    return render_template("dashboard.html", names=names, qtys=qtys)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    init_db()
+    app.run(debug=True)
