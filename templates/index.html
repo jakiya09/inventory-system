@@ -23,18 +23,16 @@
 </div>
 
 <div class="card">
-<h3>Upload CSV</h3>
 <form action="/upload-csv" method="POST" enctype="multipart/form-data">
 <input type="file" name="file">
-<button>Upload</button>
+<button>Upload CSV</button>
 </form>
 </div>
 
 <div class="card">
-<h3>AI Screenshot Detect</h3>
 <form action="/detect-image" method="POST" enctype="multipart/form-data">
 <input type="file" name="image">
-<button>Detect</button>
+<button>AI Detect</button>
 </form>
 </div>
 
@@ -43,6 +41,7 @@
 <th>Name</th>
 <th>Qty</th>
 <th>Price</th>
+<th>Date</th>
 </tr>
 
 {% for p in products %}
@@ -50,6 +49,7 @@
 <td>{{ p[1] }}</td>
 <td>{{ p[2] }}</td>
 <td>{{ p[3] }}</td>
+<td>{{ p[4] }}</td>
 </tr>
 {% endfor %}
 
