@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Lifebasket PRO</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Lifebasket Inventory</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6fb}
-.header{background:#0b1b3a;color:white;padding:15px;display:flex;justify-content:space-between}
-.card{background:white;padding:15px;margin:10px;border-radius:10px}
+body{font-family:Arial;background:#f4f7ff;margin:0}
+.header{background:#1c3faa;color:white;padding:15px;display:flex;justify-content:space-between}
+.card{background:white;margin:10px;padding:15px;border-radius:10px}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid #ddd}
-.low{color:red;font-weight:bold}
-button{background:#2d6cdf;color:white;padding:8px;border:none}
+th,td{padding:10px;border-bottom:1px solid #ddd;text-align:center}
+button{background:#1c3faa;color:white;padding:8px;border:none}
 input{padding:6px;margin:3px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.low{color:red;font-weight:bold}
 </style>
+
 </head>
 
 <body>
 
 <div class="header">
-<h2>📦 Lifebasket PRO</h2>
+<h2>📦 Lifebasket Inventory</h2>
 <a href="/logout" style="color:white">Logout</a>
 </div>
 
@@ -34,24 +33,14 @@ input{padding:6px;margin:3px}
 </div>
 
 <div class="card">
-<form action="/upload" method="POST" enctype="multipart/form-data">
-<input type="file" name="file">
-<button>Upload CSV/Excel</button>
-</form>
-
 <a href="/export"><button>Export CSV</button></a>
 </div>
 
 <div class="card">
-<form action="/ocr" method="POST" enctype="multipart/form-data">
-<input type="file" name="image">
-<button>AI OCR Upload</button>
-</form>
-</div>
-
-<div class="card">
 <table>
-<tr><th>Name</th><th>Qty</th><th>Price</th><th>Action</th></tr>
+<tr>
+<th>Name</th><th>Qty</th><th>Price</th><th>Action</th>
+</tr>
 
 {% for p in products %}
 <tr>
@@ -69,29 +58,9 @@ input{padding:6px;margin:3px}
 <td><a href="/delete/{{p[0]}}">Delete</a></td>
 </tr>
 {% endfor %}
+
 </table>
 </div>
-
-<div class="card">
-<canvas id="chart"></canvas>
-</div>
-
-<script>
-let labels = {{ products|map(attribute=1)|list|tojson }};
-let data = {{ products|map(attribute=2)|list|tojson }};
-
-new Chart(document.getElementById("chart"),{
-type:"bar",
-data:{
-labels:labels,
-datasets:[{
-label:"Stock",
-data:data,
-backgroundColor:"#2d6cdf"
-}]
-}
-});
-</script>
 
 </body>
 </html>
