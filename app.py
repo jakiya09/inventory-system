@@ -1,11 +1,17 @@
-from flask import Flask, render_template, request, redirect
-import sqlite3
-import os
+from flask import Flask, render_template, request, redirect, Response, session
+import sqlite3, os, csv, re
+import pandas as pd
+from PIL import Image
+import pytesseract
 
 app = Flask(__name__)
+app.secret_key = "secret123"
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# OCR path (change if needed)
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # DB init
 def init_db():
@@ -22,8 +28,21 @@ def init_db():
     conn.commit()
     conn.close()
 
+# Login
+@app.route("/login", methods=["GET","POST"])
+def login():
+    if request.method == "POST":
+        if request.form["username"] == "admin" and request.form["password"] == "1234":
+            session["user"] = "admin"
+            return redirect("/")
+    return render_template("login.html")
+
+# Home
 @app.route("/")
 def index():
+    if "user" not in session:
+        return redirect("/login")
+
     conn = sqlite3.connect("products.db")
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM products")
@@ -34,40 +53,82 @@ def index():
 
     return render_template("index.html", products=products, total=total)
 
+# Add product
 @app.route("/add", methods=["POST"])
 def add():
-    name = request.form["name"]
-    qty = int(request.form["qty"])
-    price = float(request.form["price"])
+    name = request.form.get("name")
+    qty = int(request.form.get("qty",0))
+    price = float(request.form.get("price",0))
 
     conn = sqlite3.connect("products.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO products (name, qty, price) VALUES (?, ?, ?)", (name, qty, price))
+    cursor.execute("INSERT INTO products (name, qty, price) VALUES (?,?,?)",(name,qty,price))
     conn.commit()
     conn.close()
 
     return redirect("/")
 
-@app.route("/add-daily", methods=["POST"])
-def add_daily():
-    name = request.form["name"]
-    qty = int(request.form["qty"])
+# CSV Export
+@app.route("/export")
+def export():
+    conn = sqlite3.connect("products.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, qty, price FROM products")
+    data = cursor.fetchall()
+    conn.close()
+
+    def generate():
+        yield "Name,Qty,Price\n"
+        for row in data:
+            yield f"{row[0]},{row[1]},{row[2]}\n"
+
+    return Response(generate(), mimetype='text/csv',
+                    headers={"Content-Disposition":"attachment;filename=data.csv"})
+
+# CSV Upload
+@app.route("/upload-csv", methods=["POST"])
+def upload_csv():
+    file = request.files.get("file")
+    if not file:
+        return redirect("/")
+
+    df = pd.read_csv(file)
 
     conn = sqlite3.connect("products.db")
     cursor = conn.cursor()
-    cursor.execute("UPDATE products SET qty = qty - ? WHERE name = ?", (qty, name))
+
+    for _, row in df.iterrows():
+        name = row.get("Name","")
+        qty = int(row.get("Qty",0) or 0)
+        price = float(row.get("Price",0) or 0)
+
+        cursor.execute("INSERT INTO products (name, qty, price) VALUES (?,?,?)",
+                       (name,qty,price))
+
     conn.commit()
     conn.close()
 
     return redirect("/")
 
-@app.route("/upload-image", methods=["POST"])
-def upload_image():
-    file = request.files["image"]
-    if file:
-        file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-    return redirect("/")
+# AI Detect
+@app.route("/detect-image", methods=["POST"])
+def detect_image():
+    file = request.files.get("image")
+    if not file:
+        return "No file"
 
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    img = Image.open(path)
+    text = pytesseract.image_to_string(img)
+
+    numbers = re.findall(r'\d+', text)
+    total = sum([int(n) for n in numbers])
+
+    return f"Detected Total Quantity: {total}"
+
+# Dashboard
 @app.route("/dashboard")
 def dashboard():
     conn = sqlite3.connect("products.db")
@@ -83,4 +144,4 @@ def dashboard():
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
