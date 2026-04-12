@@ -2,46 +2,24 @@
 <html>
 <head>
 <title>Lifebasket Inventory</title>
-<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>Lifebasket Inventory Management System</h1>
+<h1>📦 Inventory System</h1>
 
 <a href="/dashboard">📊 Dashboard</a>
-<a href="/export">⬇️ Export CSV</a>
+<a href="/logout">Logout</a>
 
-<h2>Total Products: {{ total }}</h2>
-
-<div class="card">
 <form method="POST" action="/add">
-<input name="name" placeholder="Product Name">
+<input name="name" placeholder="Name">
 <input name="qty" placeholder="Qty">
 <input name="price" placeholder="Price">
 <button>Add</button>
 </form>
-</div>
 
-<div class="card">
-<form action="/upload-csv" method="POST" enctype="multipart/form-data">
-<input type="file" name="file">
-<button>Upload CSV</button>
-</form>
-</div>
-
-<div class="card">
-<form action="/detect-image" method="POST" enctype="multipart/form-data">
-<input type="file" name="image">
-<button>AI Detect</button>
-</form>
-</div>
-
-<table>
+<table border="1">
 <tr>
-<th>Name</th>
-<th>Qty</th>
-<th>Price</th>
-<th>Date</th>
+<th>Name</th><th>Qty</th><th>Price</th>
 </tr>
 
 {% for p in products %}
@@ -49,7 +27,6 @@
 <td>{{ p[1] }}</td>
 <td>{{ p[2] }}</td>
 <td>{{ p[3] }}</td>
-<td>{{ p[4] }}</td>
 </tr>
 {% endfor %}
 
