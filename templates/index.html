@@ -1,16 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="/static/style.css">
-<title>Inventory</title>
+<title>Lifebasket PRO</title>
+<style>
+body{font-family:Arial;background:#eef3ff;margin:0}
+.header{background:#2d6cdf;color:white;padding:15px;text-align:center}
+.container{width:85%;margin:auto}
+input,button{padding:8px;margin:5px}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{border:1px solid #ddd;padding:10px;text-align:center}
+th{background:#2d6cdf;color:white}
+a{color:red}
+</style>
 </head>
+
 <body>
 
-<h1>Lifebasket Inventory</h1>
+<div class="header">
+<h2>📦 Lifebasket PRO Inventory</h2>
+<a href="/logout" style="color:white">Logout</a>
+</div>
 
-<a href="/dashboard">Dashboard</a> |
-<a href="/logout">Logout</a> |
-<a href="/export">Export CSV</a>
+<div class="container">
 
 <form method="POST" action="/add">
 <input name="name" placeholder="Product">
@@ -19,18 +30,42 @@
 <button>Add</button>
 </form>
 
+<br>
+
+<a href="/export">📁 Export CSV</a> |
+<a href="/chart">📊 Chart</a>
+
+<br><br>
+
+<form action="/import" method="POST" enctype="multipart/form-data">
+<input type="file" name="file">
+<button>Import CSV</button>
+</form>
+
+<br>
+
+<form action="/ai_upload" method="POST" enctype="multipart/form-data">
+<input type="file" name="image">
+<button>AI Scan</button>
+</form>
+
 <table>
-<tr><th>Name</th><th>Qty</th><th>Price</th></tr>
+<tr>
+<th>Name</th><th>Qty</th><th>Price</th><th>Action</th>
+</tr>
 
 {% for p in products %}
 <tr>
 <td>{{p[1]}}</td>
 <td>{{p[2]}}</td>
 <td>{{p[3]}}</td>
+<td><a href="/delete/{{p[0]}}">Delete</a></td>
 </tr>
 {% endfor %}
 
 </table>
+
+</div>
 
 </body>
 </html>
