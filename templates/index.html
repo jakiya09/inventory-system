@@ -1,34 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Lifebasket Inventory</title>
+    <title>Inventory System</title>
 </head>
 <body>
 
-<h1>📦 Lifebasket Inventory System</h1>
+<h2>Inventory System</h2>
 
-<a href="/dashboard">📊 Dashboard</a> |
-<a href="/logout">Logout</a>
-
-<form method="POST" action="/add">
-<input name="name" placeholder="Name">
-<input name="qty" placeholder="Qty">
-<input name="price" placeholder="Price">
-<button>Add</button>
+<form action="/add" method="POST">
+    <input name="name" placeholder="Product Name" required>
+    <input name="qty" type="number" placeholder="Qty" required>
+    <input name="price" type="number" placeholder="Price" required>
+    <button type="submit">Add</button>
 </form>
 
-<table border="1">
-<tr>
-<th>Name</th><th>Qty</th><th>Price</th>
-</tr>
+<hr>
 
-{% for p in products %}
-<tr>
-<td>{{ p[1] }}</td>
-<td>{{ p[2] }}</td>
-<td>{{ p[3] }}</td>
-</tr>
-{% endfor %}
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>Qty</th>
+        <th>Price</th>
+    </tr>
+
+    {% for p in products %}
+    <tr>
+        <td>{{ p[1] }}</td>
+        <td>{{ p[2] }}</td>
+        <td>{{ p[3] }}</td>
+    </tr>
+    {% endfor %}
 
 </table>
 
