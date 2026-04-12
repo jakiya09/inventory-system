@@ -1,0 +1,30 @@
+
+<h2>Inventory System</h2>
+
+<form method="POST" action="/add">
+    <input name="name" placeholder="Product Name">
+    <input name="qty" type="number" placeholder="Qty">
+    <input name="price" type="number" placeholder="Price">
+    <button>Add</button>
+</form>
+
+<hr>
+
+<table border="1">
+<tr>
+<th>Name</th><th>Qty</th><th>Price</th><th>Action</th>
+</tr>
+
+{% for p in products %}
+<tr>
+<td>{{p["name"]}}</td>
+<td>{{p["qty"]}}</td>
+<td>{{p["price"]}}</td>
+<td>
+<a href="/sell/{{p['id']}}">Sell</a>
+<a href="/return/{{p['id']}}">Return</a>
+<a href="/delete/{{p['id']}}">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</table>
