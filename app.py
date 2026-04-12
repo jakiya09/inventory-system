@@ -1,17 +1,19 @@
-from flask import Flask, render_template, request, redirect, session, Response
-import sqlite3, os, csv, io
+from flask import Flask, render_template, request, redirect, send_file, session
+import sqlite3
+import pandas as pd
+import os
 
 app = Flask(__name__)
-app.secret_key = "lifebasket_final"
+app.secret_key = "lifebasket-secret"
 
 DB = "database.db"
 
-# ================= DB INIT =================
+# ---------------- DB INIT ----------------
 def init_db():
     conn = sqlite3.connect(DB)
-    cur = conn.cursor()
+    cursor = conn.cursor()
 
-    cur.execute("""
+    cursor.execute("""
     CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
@@ -25,92 +27,83 @@ def init_db():
 
 init_db()
 
-# ================= LOGIN =================
-@app.route("/login", methods=["GET","POST"])
+# ---------------- LOGIN ----------------
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        u = request.form.get("username")
-        p = request.form.get("password")
-
-        if u == "admin" and p == "admin":
-            session["user"] = "admin"
-            return redirect("/")
-        return redirect("/login")
-
+        session["user"] = request.form["username"]
+        return redirect("/")
     return render_template("login.html")
 
-
+# ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
 
-
-# ================= DASHBOARD =================
+# ---------------- HOME ----------------
 @app.route("/")
 def index():
     if "user" not in session:
         return redirect("/login")
 
     conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products")
-    data = cur.fetchall()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products")
+    products = cursor.fetchall()
     conn.close()
 
-    return render_template("index.html", products=data)
+    return render_template("index.html", products=products)
 
-
-# ================= ADD =================
+# ---------------- ADD PRODUCT ----------------
 @app.route("/add", methods=["POST"])
 def add():
-    if "user" not in session:
-        return redirect("/login")
-
-    name = request.form["name"]
-    qty = request.form["qty"]
-    price = request.form["price"]
-
     conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute("INSERT INTO products (name,qty,price) VALUES (?,?,?)",
-                (name, qty, price))
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
+        (request.form["name"], request.form["qty"], request.form["price"])
+    )
+
     conn.commit()
     conn.close()
 
     return redirect("/")
 
-
-# ================= DELETE =================
-@app.route("/delete/<int:id>")
-def delete(id):
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute("DELETE FROM products WHERE id=?", (id,))
-    conn.commit()
-    conn.close()
-    return redirect("/")
-
-
-# ================= CSV EXPORT =================
+# ---------------- CSV EXPORT ----------------
 @app.route("/export")
 def export():
     conn = sqlite3.connect(DB)
-    cur = conn.cursor()
-    cur.execute("SELECT name,qty,price FROM products")
-    rows = cur.fetchall()
+    df = pd.read_sql_query("SELECT * FROM products", conn)
+    conn.close()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["name","qty","price"])
-    writer.writerows(rows)
+    file = "products.csv"
+    df.to_csv(file, index=False)
 
-    return Response(output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition":"attachment;filename=inventory.csv"})
+    return send_file(file, as_attachment=True)
 
+# ---------------- CSV IMPORT ----------------
+@app.route("/upload", methods=["POST"])
+def upload():
+    file = request.files["file"]
+    df = pd.read_csv(file)
 
-# ================= RUN =================
+    conn = sqlite3.connect(DB)
+    cursor = conn.cursor()
+
+    for _, row in df.iterrows():
+        cursor.execute(
+            "INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
+            (row["name"], row["qty"], row["price"])
+        )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/")
+
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT",5000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
