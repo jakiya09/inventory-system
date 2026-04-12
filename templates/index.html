@@ -1,42 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inventory</title>
-    <link rel="stylesheet" href="/static/style.css">
+<title>Lifebasket Inventory</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>📦 Lifebasket Stock Management</h1>
+<h1>Lifebasket Inventory Management System</h1>
+
+<a href="/dashboard">📊 Dashboard</a>
+<a href="/export">⬇️ Export CSV</a>
 
 <h2>Total Products: {{ total }}</h2>
 
 <div class="card">
 <form method="POST" action="/add">
-    <input name="name" placeholder="Product Name">
-    <input name="qty" placeholder="Qty">
-    <input name="price" placeholder="Price">
-    <button>Add</button>
+<input name="name" placeholder="Product Name">
+<input name="qty" placeholder="Qty">
+<input name="price" placeholder="Price">
+<button>Add</button>
 </form>
 </div>
 
 <div class="card">
-<h3>Upload Screenshot</h3>
-<form method="POST" action="/upload-image" enctype="multipart/form-data">
-    <input type="file" name="image">
-    <button>Upload</button>
+<h3>Upload CSV</h3>
+<form action="/upload-csv" method="POST" enctype="multipart/form-data">
+<input type="file" name="file">
+<button>Upload</button>
 </form>
 </div>
 
 <div class="card">
-<h3>Daily Sales</h3>
-<form method="POST" action="/add-daily">
-    <input name="name" placeholder="Product Name">
-    <input name="qty" placeholder="Sold Qty">
-    <button>Update Stock</button>
+<h3>AI Screenshot Detect</h3>
+<form action="/detect-image" method="POST" enctype="multipart/form-data">
+<input type="file" name="image">
+<button>Detect</button>
 </form>
 </div>
-
-<a href="/dashboard">Go to Dashboard</a>
 
 <table>
 <tr>
