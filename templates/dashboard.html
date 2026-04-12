@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+<body style="background:#0b1f3a;color:white;text-align:center;">
 
-<body style="background:#0d6efd; color:white;">
-
-<h1>📊 Dashboard (Date Wise)</h1>
+<h1>📊 Dashboard</h1>
 
 <canvas id="chart"></canvas>
 
@@ -14,12 +14,13 @@
 const ctx = document.getElementById('chart');
 
 new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
-        labels: {{ dates|safe }},
+        labels: {{ names|safe }},
         datasets: [{
-            label: 'Daily Stock',
-            data: {{ qtys|safe }}
+            label: 'Stock',
+            data: {{ qtys|safe }},
+            backgroundColor: 'blue'
         }]
     }
 });
