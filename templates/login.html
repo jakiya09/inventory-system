@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Login</title>
+<title>Login - Lifebasket</title>
+<style>
+body{font-family:Arial;background:#f0f6ff;text-align:center;padding-top:100px}
+.box{background:white;padding:30px;width:300px;margin:auto;border-radius:10px}
+input{width:100%;padding:10px;margin:10px 0}
+button{background:#2563eb;color:white;padding:10px;width:100%;border:none}
+</style>
 </head>
-<body style="background:#0b1b3a;color:white;display:flex;justify-content:center;align-items:center;height:100vh">
-
-<form method="POST" style="background:#122a55;padding:25px;border-radius:10px">
-<h2>Lifebasket Login</h2>
-
-<input name="username" placeholder="admin" style="padding:8px"><br><br>
-<input name="password" type="password" placeholder="admin" style="padding:8px"><br><br>
-
-<button style="padding:8px;background:#2d6cdf;color:white;border:none">Login</button>
+<body>
+<div class="box">
+<h2>🔐 Login</h2>
+<form method="POST">
+<input name="username" placeholder="Username">
+<button>Login</button>
 </form>
-
+</div>
 </body>
 </html>
