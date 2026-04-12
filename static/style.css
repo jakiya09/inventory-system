@@ -1,20 +1,24 @@
 body {
     font-family: Arial;
-    background: linear-gradient(135deg, #5f2c82, #49a09d);
+    background: #f4f8fb;
+}
+
+h1 {
+    background: #0d6efd;
     color: white;
-    padding: 20px;
+    padding: 15px;
+    text-align: center;
 }
 
 .card {
     background: white;
-    color: black;
     padding: 15px;
-    margin: 20px 0;
+    margin: 20px;
     border-radius: 10px;
 }
 
 button {
-    background: purple;
+    background: #0d6efd;
     color: white;
     padding: 8px;
     border: none;
@@ -23,5 +27,4 @@ button {
 table {
     width: 100%;
     background: white;
-    color: black;
 }
