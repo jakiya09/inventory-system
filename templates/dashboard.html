@@ -6,7 +6,7 @@
 
 <body style="background:#0d6efd; color:white;">
 
-<h1>Dashboard</h1>
+<h1>📊 Dashboard (Date Wise)</h1>
 
 <canvas id="chart"></canvas>
 
@@ -14,11 +14,11 @@
 const ctx = document.getElementById('chart');
 
 new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
-        labels: {{ names|safe }},
+        labels: {{ dates|safe }},
         datasets: [{
-            label: 'Stock',
+            label: 'Daily Stock',
             data: {{ qtys|safe }}
         }]
     }
