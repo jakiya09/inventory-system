@@ -1,53 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Lifebasket PRO</title>
+<title>Lifebasket Inventory</title>
 <style>
-body{font-family:Arial;background:#eef3ff;margin:0}
-.header{background:#2d6cdf;color:white;padding:15px;text-align:center}
-.container{width:85%;margin:auto}
-input,button{padding:8px;margin:5px}
-table{width:100%;border-collapse:collapse;margin-top:20px}
-th,td{border:1px solid #ddd;padding:10px;text-align:center}
-th{background:#2d6cdf;color:white}
-a{color:red}
+body{font-family:Arial;background:#f4f7ff}
+.container{width:800px;margin:auto}
+.card{background:white;padding:20px;margin-top:20px;border-radius:10px}
+input{padding:8px;margin:5px}
+table{width:100%;background:white;margin-top:20px}
+th,td{padding:10px;border-bottom:1px solid #ddd}
+.btn{padding:5px 10px;background:red;color:white;text-decoration:none}
 </style>
 </head>
-
 <body>
-
-<div class="header">
-<h2>📦 Lifebasket PRO Inventory</h2>
-<a href="/logout" style="color:white">Logout</a>
-</div>
 
 <div class="container">
 
+<h2>📦 Lifebasket Inventory</h2>
+<a href="/logout">Logout</a>
+
+<div class="card">
 <form method="POST" action="/add">
-<input name="name" placeholder="Product">
-<input name="qty" type="number" placeholder="Qty">
-<input name="price" type="number" placeholder="Price">
+<input name="name" placeholder="Product Name">
+<input name="qty" placeholder="Qty">
+<input name="price" placeholder="Price">
 <button>Add</button>
 </form>
-
-<br>
-
-<a href="/export">📁 Export CSV</a> |
-<a href="/chart">📊 Chart</a>
-
-<br><br>
-
-<form action="/import" method="POST" enctype="multipart/form-data">
-<input type="file" name="file">
-<button>Import CSV</button>
-</form>
-
-<br>
-
-<form action="/ai_upload" method="POST" enctype="multipart/form-data">
-<input type="file" name="image">
-<button>AI Scan</button>
-</form>
+</div>
 
 <table>
 <tr>
@@ -59,7 +38,7 @@ a{color:red}
 <td>{{p[1]}}</td>
 <td>{{p[2]}}</td>
 <td>{{p[3]}}</td>
-<td><a href="/delete/{{p[0]}}">Delete</a></td>
+<td><a class="btn" href="/delete/{{p[0]}}">Delete</a></td>
 </tr>
 {% endfor %}
 
