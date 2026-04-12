@@ -1,14 +1,15 @@
-from flask import Flask, render_template, request, redirect
 import sqlite3
+from flask import Flask, render_template, request, redirect
 
 app = Flask(__name__)
 
+# DB connection
 def db():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
 
-# DB CREATE
+# CREATE TABLE
 def init_db():
     conn = db()
     conn.execute("""
@@ -21,6 +22,8 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+init_db()
 
 @app.route("/")
 def home():
@@ -36,8 +39,10 @@ def add():
     price = request.form["price"]
 
     conn = db()
-    conn.execute("INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
-                 (name, qty, price))
+    conn.execute(
+        "INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
+        (name, qty, price)
+    )
     conn.commit()
     conn.close()
     return redirect("/")
@@ -67,5 +72,4 @@ def delete(id):
     return redirect("/")
 
 if __name__ == "__main__":
-    init_db()
     app.run(host="0.0.0.0")
