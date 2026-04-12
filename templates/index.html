@@ -2,64 +2,67 @@
 <html>
 <head>
 <title>Lifebasket Inventory</title>
-
 <style>
-body{font-family:Arial;background:#f4f7ff;margin:0}
-.header{background:#1c3faa;color:white;padding:15px;display:flex;justify-content:space-between}
-.card{background:white;margin:10px;padding:15px;border-radius:10px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid #ddd;text-align:center}
-button{background:#1c3faa;color:white;padding:8px;border:none}
-input{padding:6px;margin:3px}
-.low{color:red;font-weight:bold}
-</style>
+body{font-family:Arial;background:#f3f6ff;margin:0}
+.header{background:#2563eb;color:white;padding:15px}
+.container{padding:20px}
 
+table{width:100%;background:white;border-collapse:collapse}
+th,td{padding:10px;border:1px solid #ddd;text-align:center}
+
+.low{background:#ffe5e5}
+
+input{padding:8px;margin:5px}
+button{background:#2563eb;color:white;padding:8px;border:none}
+a{color:white;margin-left:10px}
+</style>
 </head>
 
 <body>
 
 <div class="header">
-<h2>📦 Lifebasket Inventory</h2>
-<a href="/logout" style="color:white">Logout</a>
+📦 Lifebasket Inventory
+<a href="/logout">Logout</a>
+<a href="/export">Export CSV</a>
 </div>
 
-<div class="card">
-<form method="POST" action="/add">
-<input name="name" placeholder="Product">
+<div class="container">
+
+<h3>Add Product</h3>
+<form action="/add" method="POST">
+<input name="name" placeholder="Name">
 <input name="qty" placeholder="Qty">
 <input name="price" placeholder="Price">
 <button>Add</button>
 </form>
-</div>
 
-<div class="card">
-<a href="/export"><button>Export CSV</button></a>
-</div>
+<br>
 
-<div class="card">
+<h3>Upload CSV</h3>
+<form action="/upload" method="POST" enctype="multipart/form-data">
+<input type="file" name="file">
+<button>Upload</button>
+</form>
+
+<br>
+
 <table>
 <tr>
-<th>Name</th><th>Qty</th><th>Price</th><th>Action</th>
+<th>Name</th>
+<th>Qty</th>
+<th>Price</th>
 </tr>
 
 {% for p in products %}
-<tr>
+<tr class="{% if p[2] < 5 %}low{% endif %}">
 <td>{{p[1]}}</td>
-
-<td>
-{% if p[2]|int < 5 %}
-<span class="low">{{p[2]}} ⚠ LOW</span>
-{% else %}
-{{p[2]}}
-{% endif %}
-</td>
-
+<td>{{p[2]}}</td>
 <td>{{p[3]}}</td>
-<td><a href="/delete/{{p[0]}}">Delete</a></td>
 </tr>
 {% endfor %}
 
 </table>
+
 </div>
 
 </body>
