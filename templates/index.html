@@ -1,64 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Lifebasket Stock Management</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #eef5ff;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #0d6efd;
-        }
-
-        .card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        input, button {
-            padding: 8px;
-            margin: 5px;
-        }
-
-        button {
-            background: #0d6efd;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        table {
-            width: 100%;
-            background: white;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .low {
-            color: red;
-        }
-    </style>
+    <title>Inventory</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
 
 <h1>📦 Lifebasket Stock Management</h1>
 
-<div class="card">
-    <h3>Total Products: {{ total }}</h3>
-</div>
+<h2>Total Products: {{ total }}</h2>
 
 <div class="card">
-<form action="/add" method="post">
+<form method="POST" action="/add">
     <input name="name" placeholder="Product Name">
     <input name="qty" placeholder="Qty">
     <input name="price" placeholder="Price">
@@ -67,44 +20,36 @@
 </div>
 
 <div class="card">
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <button>Upload CSV</button>
+<h3>Upload Screenshot</h3>
+<form method="POST" action="/upload-image" enctype="multipart/form-data">
+    <input type="file" name="image">
+    <button>Upload</button>
 </form>
-
-<a href="/export"><button>📤 Export CSV</button></a>
 </div>
+
+<div class="card">
+<h3>Daily Sales</h3>
+<form method="POST" action="/add-daily">
+    <input name="name" placeholder="Product Name">
+    <input name="qty" placeholder="Sold Qty">
+    <button>Update Stock</button>
+</form>
+</div>
+
+<a href="/dashboard">Go to Dashboard</a>
 
 <table>
 <tr>
-    <th>Name</th>
-    <th>Qty</th>
-    <th>Price</th>
-    <th>Action</th>
+<th>Name</th>
+<th>Qty</th>
+<th>Price</th>
 </tr>
 
 {% for p in products %}
 <tr>
-    <td>{{ p.name }}</td>
-
-    <td class="{% if p.qty < 5 %}low{% endif %}">
-        {{ p.qty }}
-    </td>
-
-    <td>{{ p.price }}</td>
-
-    <td>
-        <form action="/edit/{{p.id}}" method="post" style="display:inline;">
-            <input name="name" value="{{p.name}}">
-            <input name="qty" value="{{p.qty}}">
-            <input name="price" value="{{p.price}}">
-            <button>✏️ Edit</button>
-        </form>
-
-        <a href="/delete/{{p.id}}">
-            <button>❌ Delete</button>
-        </a>
-    </td>
+<td>{{ p[1] }}</td>
+<td>{{ p[2] }}</td>
+<td>{{ p[3] }}</td>
 </tr>
 {% endfor %}
 
