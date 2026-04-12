@@ -1,25 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Lifebasket Inventory</title>
+<title>Lifebasket PRO</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body{font-family:Arial;background:#f4f7ff}
-.container{width:900px;margin:auto}
-.card{background:white;padding:15px;margin-top:15px;border-radius:10px}
-input{padding:8px;margin:5px}
-table{width:100%;background:white;margin-top:15px;border-collapse:collapse}
+body{margin:0;font-family:Arial;background:#f4f6fb}
+.header{background:#0b1b3a;color:white;padding:15px;display:flex;justify-content:space-between}
+.card{background:white;padding:15px;margin:10px;border-radius:10px}
+table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #ddd}
-.btn{background:red;color:white;padding:5px;text-decoration:none}
-.top{display:flex;justify-content:space-between}
+.low{color:red;font-weight:bold}
+button{background:#2d6cdf;color:white;padding:8px;border:none}
+input{padding:6px;margin:3px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 </style>
 </head>
+
 <body>
 
-<div class="container">
-
-<div class="top">
-<h2>📦 Lifebasket Inventory</h2>
-<a href="/logout">Logout</a>
+<div class="header">
+<h2>📦 Lifebasket PRO</h2>
+<a href="/logout" style="color:white">Logout</a>
 </div>
 
 <div class="card">
@@ -32,26 +34,64 @@ th,td{padding:10px;border-bottom:1px solid #ddd}
 </div>
 
 <div class="card">
-<a href="/export">📁 Export CSV</a>
+<form action="/upload" method="POST" enctype="multipart/form-data">
+<input type="file" name="file">
+<button>Upload CSV/Excel</button>
+</form>
+
+<a href="/export"><button>Export CSV</button></a>
 </div>
 
+<div class="card">
+<form action="/ocr" method="POST" enctype="multipart/form-data">
+<input type="file" name="image">
+<button>AI OCR Upload</button>
+</form>
+</div>
+
+<div class="card">
 <table>
-<tr>
-<th>Name</th><th>Qty</th><th>Price</th><th>Action</th>
-</tr>
+<tr><th>Name</th><th>Qty</th><th>Price</th><th>Action</th></tr>
 
 {% for p in products %}
 <tr>
 <td>{{p[1]}}</td>
-<td>{{p[2]}}</td>
+
+<td>
+{% if p[2]|int < 5 %}
+<span class="low">{{p[2]}} ⚠ LOW</span>
+{% else %}
+{{p[2]}}
+{% endif %}
+</td>
+
 <td>{{p[3]}}</td>
-<td><a class="btn" href="/delete/{{p[0]}}">Delete</a></td>
+<td><a href="/delete/{{p[0]}}">Delete</a></td>
 </tr>
 {% endfor %}
-
 </table>
-
 </div>
+
+<div class="card">
+<canvas id="chart"></canvas>
+</div>
+
+<script>
+let labels = {{ products|map(attribute=1)|list|tojson }};
+let data = {{ products|map(attribute=2)|list|tojson }};
+
+new Chart(document.getElementById("chart"),{
+type:"bar",
+data:{
+labels:labels,
+datasets:[{
+label:"Stock",
+data:data,
+backgroundColor:"#2d6cdf"
+}]
+}
+});
+</script>
 
 </body>
 </html>
