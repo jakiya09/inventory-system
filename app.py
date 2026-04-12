@@ -1,15 +1,14 @@
-from flask import Flask, render_template, request, redirect, session, send_file
+from flask import Flask, render_template, request, redirect, session, jsonify
 import sqlite3
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
-from PIL import Image
-import pytesseract
 
 app = Flask(__name__)
 app.secret_key = "lifebasket_secret"
 
-# ================= DB INIT =================
+# ======================
+# DATABASE INIT
+# ======================
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -17,39 +16,69 @@ def init_db():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        qty INTEGER,
-        price REAL
+        name TEXT NOT NULL,
+        qty INTEGER NOT NULL,
+        price REAL NOT NULL
     )
     """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        password TEXT
+    )
+    """)
+
+    # default admin
+    cursor.execute("SELECT * FROM users WHERE username='admin'")
+    if not cursor.fetchone():
+        cursor.execute("INSERT INTO users (username, password) VALUES (?,?)",
+                       ("admin", "admin"))
 
     conn.commit()
     conn.close()
 
 init_db()
 
-# ================= LOGIN =================
+
+# ======================
+# LOGIN
+# ======================
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        u = request.form["username"]
-        p = request.form["password"]
+        username = request.form["username"]
+        password = request.form["password"]
 
-        if u == "admin" and p == "admin":
-            session["user"] = u
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM users WHERE username=? AND password=?",
+                       (username, password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            session["user"] = username
             return redirect("/")
-        return "Invalid Login"
+        return "Login Failed"
 
     return render_template("login.html")
 
 
+# ======================
+# LOGOUT
+# ======================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
 
 
-# ================= HOME =================
+# ======================
+# DASHBOARD
+# ======================
 @app.route("/")
 def index():
     if "user" not in session:
@@ -64,90 +93,58 @@ def index():
     return render_template("index.html", products=products)
 
 
-# ================= ADD PRODUCT =================
+# ======================
+# ADD PRODUCT
+# ======================
 @app.route("/add", methods=["POST"])
 def add():
+    name = request.form["name"]
+    qty = request.form["qty"]
+    price = request.form["price"]
+
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
-    cursor.execute(
-        "INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
-        (request.form["name"], request.form["qty"], request.form["price"])
-    )
+    cursor.execute("INSERT INTO products (name, qty, price) VALUES (?,?,?)",
+                   (name, qty, price))
 
     conn.commit()
     conn.close()
+
     return redirect("/")
 
 
-# ================= DELETE =================
+# ======================
+# DELETE
+# ======================
 @app.route("/delete/<int:id>")
 def delete(id):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
+
     cursor.execute("DELETE FROM products WHERE id=?", (id,))
+
     conn.commit()
     conn.close()
+
     return redirect("/")
 
 
-# ================= CSV EXPORT =================
+# ======================
+# CSV EXPORT
+# ======================
 @app.route("/export")
 def export():
     conn = sqlite3.connect("database.db")
     df = pd.read_sql_query("SELECT * FROM products", conn)
-    file = "export.csv"
-    df.to_csv(file, index=False)
+    df.to_csv("inventory.csv", index=False)
     conn.close()
-    return send_file(file, as_attachment=True)
+    return "CSV Export Done"
 
 
-# ================= CSV IMPORT =================
-@app.route("/import", methods=["POST"])
-def import_csv():
-    file = request.files["file"]
-    df = pd.read_csv(file)
-
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-
-    for _, row in df.iterrows():
-        cursor.execute("INSERT INTO products (name, qty, price) VALUES (?, ?, ?)",
-                       (row["name"], row["qty"], row["price"]))
-
-    conn.commit()
-    conn.close()
-    return redirect("/")
-
-
-# ================= AI SCREENSHOT OCR =================
-@app.route("/ai_upload", methods=["POST"])
-def ai_upload():
-    img = Image.open(request.files["image"])
-    text = pytesseract.image_to_string(img)
-
-    return f"<h3>Detected Text:</h3><pre>{text}</pre>"
-
-
-# ================= DASHBOARD CHART =================
-@app.route("/chart")
-def chart():
-    conn = sqlite3.connect("database.db")
-    df = pd.read_sql_query("SELECT name, qty FROM products", conn)
-
-    plt.figure(figsize=(5,3))
-    plt.bar(df["name"], df["qty"])
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-
-    file = "chart.png"
-    plt.savefig(file)
-    conn.close()
-
-    return send_file(file, mimetype="image/png")
-
-
-# ================= RUN =================
+# ======================
+# RUN
+# ======================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)
