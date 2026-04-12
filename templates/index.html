@@ -1,35 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Inventory System</title>
+<link rel="stylesheet" href="/static/style.css">
+<title>Inventory</title>
 </head>
 <body>
 
-<h2>Inventory System</h2>
+<h1>Lifebasket Inventory</h1>
 
-<form action="/add" method="POST">
-    <input name="name" placeholder="Product Name" required>
-    <input name="qty" type="number" placeholder="Qty" required>
-    <input name="price" type="number" placeholder="Price" required>
-    <button type="submit">Add</button>
+<a href="/dashboard">Dashboard</a> |
+<a href="/logout">Logout</a> |
+<a href="/export">Export CSV</a>
+
+<form method="POST" action="/add">
+<input name="name" placeholder="Product">
+<input name="qty" type="number" placeholder="Qty">
+<input name="price" type="number" placeholder="Price">
+<button>Add</button>
 </form>
 
-<hr>
+<table>
+<tr><th>Name</th><th>Qty</th><th>Price</th></tr>
 
-<table border="1">
-    <tr>
-        <th>Name</th>
-        <th>Qty</th>
-        <th>Price</th>
-    </tr>
-
-    {% for p in products %}
-    <tr>
-        <td>{{ p[1] }}</td>
-        <td>{{ p[2] }}</td>
-        <td>{{ p[3] }}</td>
-    </tr>
-    {% endfor %}
+{% for p in products %}
+<tr>
+<td>{{p[1]}}</td>
+<td>{{p[2]}}</td>
+<td>{{p[3]}}</td>
+</tr>
+{% endfor %}
 
 </table>
 
