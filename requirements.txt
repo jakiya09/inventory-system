@@ -1,6 +1,3 @@
 flask
+flask-sqlalchemy
 gunicorn
-pandas
-matplotlib
-pillow
-pytesseract
