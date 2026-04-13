@@ -1,21 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Login - Lifebasket</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Login — Lifebasket</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-body{font-family:Arial;background:#f0f6ff;text-align:center;padding-top:100px}
-.box{background:white;padding:30px;width:300px;margin:auto;border-radius:10px}
-input{width:100%;padding:10px;margin:10px 0}
-button{background:#2563eb;color:white;padding:10px;width:100%;border:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:linear-gradient(135deg,#1e3a8a,#2563EB);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:370px;box-shadow:0 24px 64px rgba(0,0,0,0.25)}
+.logo{text-align:center;margin-bottom:30px}
+.logo .icon{font-size:40px;margin-bottom:10px}
+.logo h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#0F172A;letter-spacing:-.02em}
+.logo p{font-size:13px;color:#64748B;margin-top:4px}
+.flash{padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:13px;font-weight:500;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:500;color:#64748B;margin-bottom:5px}
+.fg input{width:100%;padding:10px 14px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'Outfit',sans-serif;background:#FAFBFF;color:#0F172A;transition:all .15s}
+.fg input:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+.btn{width:100%;padding:11px;background:#2563EB;color:#fff;border:none;border-radius:10px;font-size:15px;font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;transition:all .15s}
+.btn:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.35)}
+.hint{text-align:center;margin-top:14px;font-size:12px;color:#94A3B8}
 </style>
 </head>
 <body>
 <div class="box">
-<h2>🔐 Login</h2>
-<form method="POST">
-<input name="username" placeholder="Username">
-<button>Login</button>
-</form>
+  <div class="logo">
+    <div class="icon">📦</div>
+    <h1>Lifebasket Inventory</h1>
+    <p>Sign in to manage your stock</p>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat,msg in messages %}
+    <div class="flash">{{msg}}</div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+  <form method="POST">
+    <div class="fg"><label>Username</label><input type="text" name="username" placeholder="admin" required autofocus/></div>
+    <div class="fg"><label>Password</label><input type="password" name="password" placeholder="••••••••" required/></div>
+    <button class="btn" type="submit">Sign in →</button>
+  </form>
+  <div class="hint">Default: admin / admin123</div>
 </div>
 </body>
 </html>
